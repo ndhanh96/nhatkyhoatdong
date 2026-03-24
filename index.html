@@ -17,7 +17,6 @@
         }
 
         .dotted-bg {
-            /* Dấu chấm vuông sắc nét, đặt tại y=29 để nằm dưới chân chữ */
             background-image: url("data:image/svg+xml,%3Csvg width='7' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='29' width='2' height='2' fill='%23555' shape-rendering='crispEdges'/%3E%3C/svg%3E");
             background-size: 7px 32px;
             background-repeat: repeat;
@@ -25,8 +24,6 @@
             line-height: 32px;
         }
 
-        /* Lớp mặt nạ trắng che dấu chấm dưới nhãn dán dẫn */
-        /* Padding bottom 15px đảm bảo che sạch dấu chấm ở y=29 */
         .mask-label {
             background-color: white;
             padding-right: 6px;
@@ -38,10 +35,8 @@
             box-decoration-break: clone;
         }
 
-        /* Chữ người dùng nhập vào: lơ lửng trên dòng chấm, ngắt dòng chuẩn */
-        /* Không có nền trắng để hiện dấu chấm ở các dòng mới */
         .user-value {
-            color: #1e40af; /* blue-800 */
+            color: #1e40af;
             font-weight: 600;
             padding-left: 4px;
             padding-right: 8px;
@@ -56,10 +51,21 @@
         #form-panel::-webkit-scrollbar { width: 4px; }
         #form-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
+        /* Modal cho di động */
+        #image-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
         @media print {
             .print-hidden { display: none !important; }
-            #preview-panel { padding: 0 !important; background: white !important; }
-            #printable-document { box-shadow: none !important; }
         }
     </style>
 </head>
@@ -76,7 +82,7 @@
                 </div>
                 <button id="downloadBtn" class="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-all text-sm font-bold shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    TẢI ẢNH
+                    XUẤT ẢNH
                 </button>
             </div>
             
@@ -127,13 +133,11 @@
                     </h1>
 
                     <div class="space-y-1">
-                        <!-- Trường 1 -->
                         <div class="w-full dotted-bg min-h-[32px]">
                             <span class="mask-label">1) Họ và tên (vd: Nguyễn Văn A - ca sáng full time):</span>
                             <span id="view-fullName" class="user-value"></span>
                         </div>
                         
-                        <!-- Trường 2 - Tách dòng để xóa dấu chấm sau chữ 'ghi' -->
                         <div class="w-full text-[15px]">
                             <div class="bg-white w-full leading-[32px] pr-1 pt-1 relative z-20">
                                 2) Tăng ca trong tháng ( Vd: 13/9 - 5h, 15/9 - 4h,...Nếu không tăng thì ghi
@@ -148,59 +152,49 @@
                             <span class="text-[15px] pr-2 font-bold bg-white relative z-10">3) Đi trễ, các lỗi tác phong: 10k/lần</span>
                         </div>
                         
-                        <!-- Trường 3.1 -->
                         <div class="w-full dotted-bg min-h-[32px]">
                             <span class="mask-label pl-6">- Đi trễ xin phép (Vd: 2 lần - 15/6 - 5 phút, 17/8 -10 phút):</span>
                             <span id="view-latePermitted" class="user-value"></span>
                         </div>
-                        <!-- Trường 3.2 -->
                         <div class="w-full dotted-bg min-h-[32px]">
                             <span class="mask-label pl-6">- Đi trễ không xin phép (tương tự trên):</span>
                             <span id="view-lateUnpermitted" class="user-value"></span>
                         </div>
-                        <!-- Trường 3.3 -->
                         <div class="w-full dotted-bg min-h-[32px]">
                             <span class="mask-label pl-6">- Tổng ngày đi trễ (vd: 3 ngày - 30k):</span>
                             <span id="view-lateTotal" class="user-value"></span>
                         </div>
 
-                        <!-- Trường 4 -->
                         <div class="w-full dotted-bg min-h-[32px]">
                             <span class="mask-label">4) Không kí ghi sổ khi hết ca 20k/lần:</span>
                             <span id="view-noSign" class="user-value"></span>
                         </div>
 
-                        <!-- Trường 5 -->
                         <div class="w-full dotted-bg min-h-[64px]">
                             <span class="mask-label">5) Làm mất tiền (chia trên số lượng, vd: 12/9 - 90k - 3 người(A, B, C)):</span>
                             <span id="view-lostMoney" class="user-value"></span>
                         </div>
 
-                        <!-- Trường 6 -->
                         <div class="w-full dotted-bg min-h-[64px]">
                             <span class="mask-label">6) Đổ bể đồ đạc, sự cố cá nhân (Lấy giá bán giảm 30%):</span>
                             <span id="view-brokenItems" class="user-value"></span>
                         </div>
 
-                        <!-- Trường 7 -->
                         <div class="w-full dotted-bg min-h-[32px]">
                             <span class="mask-label">7) Quên bấm app tanca (20k/lần):</span>
                             <span id="view-forgotApp" class="user-value"></span>
                         </div>
 
-                        <!-- Trường 8 -->
                         <div class="w-full dotted-bg min-h-[64px]">
                             <span class="mask-label">8) Sự cố trong ca làm, làm thiếu món của khách:</span>
                             <span id="view-incidents" class="user-value"></span>
                         </div>
 
-                        <!-- Trường 9 -->
                         <div class="w-full dotted-bg min-h-[64px]">
                             <span class="mask-label">9) Bị quản lí nhắc nhở - kí biên bản (có thì ghi không có thì thôi):</span>
                             <span id="view-managerWarning" class="user-value"></span>
                         </div>
 
-                        <!-- Trường 10 -->
                         <div class="w-full text-[15px]">
                             <div class="bg-white w-full leading-[32px] pr-1 pt-1 relative z-20">
                                 10) Tháng này em có điều gì cần góp ý với cửa hàng không ? (Có thì ghi
@@ -236,10 +230,22 @@
         </div>
     </div>
 
+    <!-- Modal hiển thị ảnh để lưu trên di động -->
+    <div id="image-modal">
+        <div class="bg-white p-4 rounded-xl max-w-full flex flex-col gap-4 shadow-2xl items-center overflow-y-auto">
+            <h3 class="font-bold text-gray-800 text-center">Nhấn giữ ảnh dưới đây để "Lưu vào Ảnh"</h3>
+            <img id="result-img" class="max-w-full h-auto border border-gray-200 shadow-sm" alt="Nhấn giữ để lưu">
+            <button id="closeModalBtn" class="bg-red-500 text-white px-6 py-2 rounded-full font-bold shadow-md active:scale-95 transition-transform">ĐÓNG</button>
+        </div>
+    </div>
+
     <script>
         const inputs = document.querySelectorAll('.form-input');
         const downloadBtn = document.getElementById('downloadBtn');
         const printableDoc = document.getElementById('printable-document');
+        const imageModal = document.getElementById('image-modal');
+        const resultImg = document.getElementById('result-img');
+        const closeModalBtn = document.getElementById('closeModalBtn');
 
         inputs.forEach(input => {
             input.addEventListener('input', (e) => {
@@ -249,10 +255,15 @@
             });
         });
 
+        closeModalBtn.addEventListener('click', () => {
+            imageModal.style.display = 'none';
+        });
+
         downloadBtn.addEventListener('click', async () => {
             if (typeof html2canvas === 'undefined') return alert("Đang tải thư viện...");
+            
             try {
-                // Che viền rác xám cho Ubuntu
+                // Che viền rác xám cho Ubuntu/iOS
                 printableDoc.style.boxShadow = "inset 0 0 0 8px #ffffff";
 
                 const canvas = await html2canvas(printableDoc, { 
@@ -264,13 +275,20 @@
                         clonedDoc.getElementById('printable-document').style.boxShadow = "inset 0 0 0 8px #ffffff";
                     }
                 });
-                printableDoc.style.boxShadow = "none";
                 
-                const monthValue = document.querySelector('[data-key="month"]').value || 'X';
+                printableDoc.style.boxShadow = "none";
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
+                
+                // Hiển thị modal để người dùng iOS có thể nhấn giữ lưu ảnh
+                resultImg.src = dataUrl;
+                imageModal.style.display = 'flex';
+
+                // Thử kích hoạt download tự động cho Desktop
                 const link = document.createElement('a');
-                link.download = `NhatKyHoatDong_Thang_${monthValue}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
+                link.download = `NhatKyHoatDong_Thang_${document.querySelector('[data-key="month"]').value || 'X'}.png`;
+                link.href = dataUrl;
                 link.click();
+                
             } catch (error) { 
                 console.error(error); 
                 printableDoc.style.boxShadow = "none";
