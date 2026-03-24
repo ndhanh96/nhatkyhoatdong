@@ -14,6 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .dotted-bg {
@@ -51,18 +52,18 @@
         #form-panel::-webkit-scrollbar { width: 4px; }
         #form-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* Modal cho di động */
-        #image-modal {
+        /* Modal & Loading Overlay */
+        #image-modal, #loading-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.85);
             z-index: 100;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
+        #image-modal { background: rgba(0,0,0,0.9); }
+        #loading-overlay { background: rgba(255,255,255,0.8); pointer-events: none; }
 
         @media print {
             .print-hidden { display: none !important; }
@@ -80,7 +81,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <h2 class="text-lg font-bold">Nhập Liệu</h2>
                 </div>
-                <button id="downloadBtn" class="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-all text-sm font-bold shadow-sm">
+                <button id="downloadBtn" class="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-all text-sm font-bold shadow-sm active:scale-95">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     XUẤT ẢNH
                 </button>
@@ -89,7 +90,7 @@
             <div class="p-6 space-y-5">
                 <div>
                     <label class="block text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Tháng báo cáo</label>
-                    <input type="text" data-key="month" class="form-input w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="VD: 9">
+                    <input type="text" data-key="month" class="form-input w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="VD: 9">
                 </div>
 
                 <div class="space-y-4">
@@ -101,7 +102,7 @@
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">2) Tăng ca trong tháng</label>
                         <textarea data-key="overtime" rows="3" class="form-input w-full p-2 border border-gray-300 rounded-md outline-none resize-none"></textarea>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-md space-y-3">
+                    <div class="bg-gray-50 p-4 rounded-md space-y-3 border border-gray-100">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase">3) Đi trễ & Tác phong</label>
                         <input type="text" data-key="latePermitted" class="form-input w-full p-2 text-sm border border-gray-300 rounded-md" placeholder="Trễ xin phép...">
                         <input type="text" data-key="lateUnpermitted" class="form-input w-full p-2 text-sm border border-gray-300 rounded-md" placeholder="Trễ không phép...">
@@ -114,7 +115,7 @@
                     <textarea data-key="incidents" rows="2" class="form-input w-full p-2 border border-gray-300 rounded-md resize-none" placeholder="8) Sự cố ca làm..."></textarea>
                     <textarea data-key="managerWarning" rows="2" class="form-input w-full p-2 border border-gray-300 rounded-md resize-none" placeholder="9) Bị nhắc nhở..."></textarea>
                     <textarea data-key="feedback" rows="2" class="form-input w-full p-2 border border-gray-300 rounded-md resize-none" placeholder="10) Góp ý..."></textarea>
-                    <input type="text" data-key="signature" class="form-input w-full p-2 border border-blue-200 bg-blue-50 rounded-md" placeholder="KÝ TÊN (Họ tên)">
+                    <input type="text" data-key="signature" class="form-input w-full p-2 border border-blue-200 bg-blue-50 rounded-md font-semibold" placeholder="KÝ TÊN (Họ tên)">
                 </div>
                 <div class="h-10"></div>
             </div>
@@ -122,7 +123,7 @@
 
         <!-- RIGHT PANEL -->
         <div id="preview-panel" class="w-full md:w-2/3 bg-gray-400 overflow-y-auto h-screen p-4 md:p-8 flex justify-center items-start">
-            <div class="w-full max-w-[620px] shadow-2xl bg-white mx-auto">
+            <div class="w-full max-w-[580px] shadow-2xl bg-white mx-auto">
                 <div id="printable-document" class="bg-white w-full px-6 md:px-10 pt-8 pb-6 text-black text-[15px] relative border-none outline-none ring-0">
                     
                     <h1 class="text-[20px] md:text-[22px] font-bold text-center mb-6 uppercase tracking-wide">
@@ -138,6 +139,7 @@
                             <span id="view-fullName" class="user-value"></span>
                         </div>
                         
+                        <!-- Trường 2 Split logic -->
                         <div class="w-full text-[15px]">
                             <div class="bg-white w-full leading-[32px] pr-1 pt-1 relative z-20">
                                 2) Tăng ca trong tháng ( Vd: 13/9 - 5h, 15/9 - 4h,...Nếu không tăng thì ghi
@@ -217,9 +219,9 @@
                         <div class="flex justify-end pr-8">
                             <div class="text-center min-w-[200px]">
                                 <p class="font-bold mb-0 text-[16px] leading-snug">Kí tên</p>
-                                <p class="italic mb-1 text-[15px] leading-snug">(Ghi rõ họ tên)</p>
+                                <p class="italic mb-1 text-[15px] leading-snug text-gray-600">(Ghi rõ họ tên)</p>
                                 <div class="mt-1">
-                                    <span id="view-signature" class="text-blue-800 border-b-[2.5px] border-dotted border-black min-w-[10rem] inline-block text-center pb-0.5 relative -top-[4px] font-bold italic"></span>
+                                    <span id="view-signature" class="text-blue-800 border-b-[2.5px] border-dotted border-black min-w-[10rem] inline-block text-center pb-0.5 relative -top-[4px] font-bold italic text-lg"></span>
                                 </div>
                             </div>
                         </div>
@@ -230,12 +232,23 @@
         </div>
     </div>
 
-    <!-- Modal hiển thị ảnh để lưu trên di động -->
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="flex flex-col gap-4">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="font-bold text-blue-700">Đang tạo ảnh...</p>
+    </div>
+
+    <!-- Modal cho di động -->
     <div id="image-modal">
-        <div class="bg-white p-4 rounded-xl max-w-full flex flex-col gap-4 shadow-2xl items-center overflow-y-auto">
-            <h3 class="font-bold text-gray-800 text-center">Nhấn giữ ảnh dưới đây để "Lưu vào Ảnh"</h3>
-            <img id="result-img" class="max-w-full h-auto border border-gray-200 shadow-sm" alt="Nhấn giữ để lưu">
-            <button id="closeModalBtn" class="bg-red-500 text-white px-6 py-2 rounded-full font-bold shadow-md active:scale-95 transition-transform">ĐÓNG</button>
+        <div class="bg-white p-5 rounded-2xl max-w-[95%] w-full flex flex-col gap-4 shadow-2xl items-center">
+            <div class="text-center">
+                <h3 class="font-bold text-gray-900 text-lg">Ảnh đã sẵn sàng!</h3>
+                <p class="text-gray-600 text-sm mt-1">Nhấn giữ vào ảnh bên dưới rồi chọn <span class="font-bold text-blue-600">"Lưu vào Ảnh"</span> hoặc <span class="font-bold text-blue-600">"Tải hình ảnh xuống"</span>.</p>
+            </div>
+            <div class="w-full max-h-[60vh] overflow-y-auto border-2 border-dashed border-gray-200 rounded-lg">
+                <img id="result-img" class="w-full h-auto" alt="Nhấn giữ để lưu">
+            </div>
+            <button id="closeModalBtn" class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold active:bg-black transition-colors">QUAY LẠI CHỈNH SỬA</button>
         </div>
     </div>
 
@@ -244,9 +257,11 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const printableDoc = document.getElementById('printable-document');
         const imageModal = document.getElementById('image-modal');
+        const loadingOverlay = document.getElementById('loading-overlay');
         const resultImg = document.getElementById('result-img');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
+        // Đồng bộ dữ liệu
         inputs.forEach(input => {
             input.addEventListener('input', (e) => {
                 const key = e.target.getAttribute('data-key');
@@ -260,37 +275,45 @@
         });
 
         downloadBtn.addEventListener('click', async () => {
-            if (typeof html2canvas === 'undefined') return alert("Đang tải thư viện...");
+            if (typeof html2canvas === 'undefined') return alert("Vui lòng đợi 1 giây để thư viện tải xong...");
+            
+            // Hiển thị trạng thái đang xử lý
+            loadingOverlay.style.display = 'flex';
             
             try {
-                // Che viền rác xám cho Ubuntu/iOS
-                printableDoc.style.boxShadow = "inset 0 0 0 8px #ffffff";
+                // Che viền rác xám cho Ubuntu/iOS Chrome
+                printableDoc.style.boxShadow = "inset 0 0 0 10px #ffffff";
 
+                // Scale 3 là mức an toàn cho di động, vẫn đủ nét để in
                 const canvas = await html2canvas(printableDoc, { 
-                    scale: 4, 
+                    scale: 3, 
                     useCORS: true, 
                     backgroundColor: '#ffffff',
                     logging: false,
+                    allowTaint: true,
                     onclone: (clonedDoc) => {
-                        clonedDoc.getElementById('printable-document').style.boxShadow = "inset 0 0 0 8px #ffffff";
+                        clonedDoc.getElementById('printable-document').style.boxShadow = "inset 0 0 0 10px #ffffff";
                     }
                 });
                 
                 printableDoc.style.boxShadow = "none";
                 const dataUrl = canvas.toDataURL('image/png', 1.0);
                 
-                // Hiển thị modal để người dùng iOS có thể nhấn giữ lưu ảnh
+                // Hiển thị modal ảnh
                 resultImg.src = dataUrl;
+                loadingOverlay.style.display = 'none';
                 imageModal.style.display = 'flex';
 
-                // Thử kích hoạt download tự động cho Desktop
+                // Thử kích hoạt download tự động (chỉ hoạt động trên Desktop)
                 const link = document.createElement('a');
                 link.download = `NhatKyHoatDong_Thang_${document.querySelector('[data-key="month"]').value || 'X'}.png`;
                 link.href = dataUrl;
                 link.click();
                 
             } catch (error) { 
-                console.error(error); 
+                console.error("Lỗi xuất ảnh:", error);
+                loadingOverlay.style.display = 'none';
+                alert("Không thể tạo ảnh. Vui lòng thử lại hoặc chụp ảnh màn hình.");
                 printableDoc.style.boxShadow = "none";
             }
         });
