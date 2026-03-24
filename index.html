@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nhật Ký Hoạt Động Tháng</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,7 +65,7 @@
             justify-content: center;
             padding: 20px;
         }
-        #image-modal { background: rgba(0,0,0,0.92); }
+        #image-modal { background: rgba(0,0,0,0.95); }
         #loading-overlay { background: rgba(255,255,255,0.9); pointer-events: none; }
 
         @media print {
@@ -145,11 +145,14 @@
                         <div class="w-full text-[15px]">
                             <div class="bg-white w-full leading-[32px] pr-1 pt-1 relative z-20">
                                 2) Tăng ca trong tháng ( Vd: 13/9 - 5h, 15/9 - 4h,...Nếu không tăng thì ghi
-                            </div>
-                            <div class="w-full text-left dotted-bg min-h-[32px]">
                                 <span class="mask-label">không có):</span>
-                                <span id="view-overtime" class="user-value"></span>
+                                
+                                <div class="text-left dotted-bg min-h-[32px]">
+                                    <span id="view-overtime" class="user-value"></span>
+                                    
+                                </div>
                             </div>
+                            
                         </div>
 
                         <div class="py-1">
@@ -211,10 +214,10 @@
                     </div>
 
                     <div class="mt-8 pt-2 leading-[1.6]">
-                        <p class="mb-3 text-justify text-sm">
+                        <p class="mb-3 text-justify text-[13px]">
                             Các em sẽ có 3 ngày để tự kiểm tra rà soát hoạt động trong tháng trước khi gửi cửa hàng. Các em vui lòng tự check kĩ, nếu có sai sót hoặc gian dối làm mất thời gian cửa hàng rà soát sẽ phạt mỗi em 100k và kí biên bản.
                         </p>
-                        <p class="mb-10 text-justify text-sm">
+                        <p class="mb-10 text-justify text-[13px]">
                             Em cam kết các số liệu gửi cho cửa hàng về số giờ tăng ca, cũng như các sự cố đã được em kiểm tra đầy đủ về giấy tờ, app trên tinh thần minh bạch và rõ ràng để tránh sai sót và mất thời gian cho em và cửa hàng.
                         </p>
                         
@@ -236,21 +239,21 @@
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="flex flex-col gap-4">
-        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <p class="font-bold text-blue-700">Đang tạo ảnh...</p>
     </div>
 
     <!-- Modal cho di động -->
     <div id="image-modal">
-        <div class="bg-white p-5 rounded-2xl max-w-[95%] w-full flex flex-col gap-4 shadow-2xl items-center">
+        <div class="bg-white p-5 rounded-3xl max-w-[95%] w-full flex flex-col gap-4 shadow-2xl items-center">
             <div class="text-center">
-                <h3 class="font-bold text-gray-900 text-lg uppercase">Thành công!</h3>
-                <p class="text-gray-600 text-sm mt-1">Nhấn giữ ảnh bên dưới và chọn <span class="font-bold text-blue-600 italic">"Lưu vào Ảnh"</span>.</p>
+                <h3 class="font-bold text-gray-900 text-lg uppercase tracking-tight">Ảnh đã tạo xong!</h3>
+                <p class="text-gray-500 text-sm mt-1">Ấn giữ ảnh dưới đây rồi chọn <span class="text-blue-600 font-bold">"Lưu vào Ảnh"</span>.</p>
             </div>
-            <div class="w-full max-h-[60vh] overflow-y-auto border-2 border-dashed border-gray-200 rounded-lg">
+            <div class="w-full max-h-[65vh] overflow-y-auto border border-gray-100 rounded-xl">
                 <img id="result-img" class="w-full h-auto" alt="Nhấn giữ để lưu">
             </div>
-            <button id="closeModalBtn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold active:bg-blue-700 transition-colors uppercase shadow-lg">Quay lại</button>
+            <button id="closeModalBtn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold active:bg-blue-800 transition-colors uppercase shadow-lg text-sm">Quay lại chỉnh sửa</button>
         </div>
     </div>
 
@@ -275,48 +278,65 @@
 
         closeModalBtn.addEventListener('click', () => {
             imageModal.style.display = 'none';
+            resultImg.src = ""; // Clear memory
         });
 
-        downloadBtn.addEventListener('click', async () => {
-            if (typeof html2canvas === 'undefined') return alert("Vui lòng đợi giây lát để hệ thống sẵn sàng...");
+        // Hàm chụp ảnh chính với retry cơ chế
+        const captureImage = async (scaleValue) => {
+            // Tạm thời tắt các hiệu ứng CSS gây nặng bộ nhớ
+            captureWrapper.classList.remove('shadow-2xl');
+            printableDoc.style.boxShadow = "inset 0 0 0 10px #ffffff";
             
-            loadingOverlay.style.display = 'flex';
-            
-            // Đảm bảo cuộn lên đầu để tránh lỗi tọa độ trên iOS
-            window.scrollTo(0, 0);
-
             try {
-                // Tạm thời tắt bóng đổ của khung chứa để tránh làm nặng bộ nhớ render
-                captureWrapper.classList.remove('shadow-2xl');
-                
-                // Hiệu ứng "đóng băng" lề để xóa viền đen
-                printableDoc.style.boxShadow = "inset 0 0 0 10px #ffffff";
-
-                // Scale 2 là tối ưu nhất cho iOS (Vẫn in nét nhưng không crash RAM)
                 const canvas = await html2canvas(printableDoc, { 
-                    scale: 2, 
+                    scale: scaleValue, 
                     useCORS: true, 
                     backgroundColor: '#ffffff',
                     logging: false,
-                    removeContainer: true,
-                    // Fix lỗi font-weight trên iOS Safari
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: document.documentElement.offsetWidth,
+                    windowHeight: document.documentElement.offsetHeight,
                     onclone: (clonedDoc) => {
-                        const el = clonedDoc.getElementById('printable-document');
-                        el.style.boxShadow = "inset 0 0 0 10px #ffffff";
+                        clonedDoc.getElementById('printable-document').style.boxShadow = "inset 0 0 0 10px #ffffff";
                     }
                 });
                 
-                // Khôi phục lại giao diện
+                // Khôi phục UI
                 captureWrapper.classList.add('shadow-2xl');
                 printableDoc.style.boxShadow = "none";
                 
-                const dataUrl = canvas.toDataURL('image/png', 0.9);
+                return canvas;
+            } catch (err) {
+                captureWrapper.classList.add('shadow-2xl');
+                printableDoc.style.boxShadow = "none";
+                throw err;
+            }
+        };
+
+        downloadBtn.addEventListener('click', async () => {
+            if (typeof html2canvas === 'undefined') return alert("Vui lòng đợi 1-2 giây cho hệ thống tải xong.");
+            
+            loadingOverlay.style.display = 'flex';
+            window.scrollTo(0, 0); // iOS cần cuộn lên đầu
+
+            try {
+                // Thử độ nét 2.0 (chuẩn nét)
+                let canvas;
+                try {
+                    canvas = await captureImage(2.0);
+                } catch (e) {
+                    // Nếu lỗi (iOS đầy RAM), tự động thử lại ở độ nét 1.0 (nhẹ nhất)
+                    canvas = await captureImage(1.0);
+                }
                 
+                const dataUrl = canvas.toDataURL('image/png', 0.8);
                 resultImg.src = dataUrl;
+                
                 loadingOverlay.style.display = 'none';
                 imageModal.style.display = 'flex';
 
-                // Desktop download
+                // Tự động tải về trên PC
                 if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
                     const link = document.createElement('a');
                     link.download = `NhatKyThang_${document.querySelector('[data-key="month"]').value || 'X'}.png`;
@@ -327,9 +347,7 @@
             } catch (error) { 
                 console.error("Lỗi:", error);
                 loadingOverlay.style.display = 'none';
-                captureWrapper.classList.add('shadow-2xl');
-                printableDoc.style.boxShadow = "none";
-                alert("Hệ thống quá tải hoặc trình duyệt bị giới hạn bộ nhớ. Vui lòng thử lại hoặc chụp ảnh màn hình.");
+                alert("Bộ nhớ trình duyệt iOS đã đầy. Vui lòng đóng bớt các tab khác của Chrome rồi thử lại, hoặc chụp ảnh màn hình.");
             }
         });
     </script>
