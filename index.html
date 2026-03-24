@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật Ký Hoạt Động Tháng</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2canvas Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .dotted-bg {
+            /* Dấu chấm vuông sắc nét, đặt tại y=29 để nằm dưới chân chữ */
+            background-image: url("data:image/svg+xml,%3Csvg width='7' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='29' width='2' height='2' fill='%23555' shape-rendering='crispEdges'/%3E%3C/svg%3E");
+            background-size: 7px 32px;
+            background-repeat: repeat;
+            background-position: top left;
+            line-height: 32px;
+        }
+
+        /* Lớp mặt nạ trắng che dấu chấm dưới nhãn dán dẫn */
+        /* Padding bottom 15px đảm bảo che sạch dấu chấm ở y=29 */
+        .mask-label {
+            background-color: white;
+            padding-right: 6px;
+            padding-bottom: 15px; 
+            position: relative;
+            z-index: 10;
+            display: inline;
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+        }
+
+        /* Chữ người dùng nhập vào: lơ lửng trên dòng chấm, ngắt dòng chuẩn */
+        /* Không có nền trắng để hiện dấu chấm ở các dòng mới */
+        .user-value {
+            color: #1e40af; /* blue-800 */
+            font-weight: 600;
+            padding-left: 4px;
+            padding-right: 8px;
+            position: relative;
+            z-index: 10;
+            top: -4px;
+            display: inline;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        #form-panel::-webkit-scrollbar { width: 4px; }
+        #form-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        @media print {
+            .print-hidden { display: none !important; }
+            #preview-panel { padding: 0 !important; background: white !important; }
+            #printable-document { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        
+        <!-- LEFT PANEL: Input Form -->
+        <div id="form-panel" class="w-full md:w-1/3 bg-white border-r border-gray-200 overflow-y-auto h-screen flex flex-col shadow-lg z-20 print-hidden">
+            <div class="p-4 bg-blue-600 text-white flex justify-between items-center sticky top-0 z-30 shadow-md">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <h2 class="text-lg font-bold">Nhập Liệu</h2>
+                </div>
+                <button id="downloadBtn" class="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-all text-sm font-bold shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    TẢI ẢNH
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-5">
+                <div>
+                    <label class="block text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Tháng báo cáo</label>
+                    <input type="text" data-key="month" class="form-input w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="VD: 9">
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">1) Họ và tên</label>
+                        <input type="text" data-key="fullName" class="form-input w-full p-2 border border-gray-300 rounded-md outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">2) Tăng ca trong tháng</label>
+                        <textarea data-key="overtime" rows="3" class="form-input w-full p-2 border border-gray-300 rounded-md outline-none resize-none"></textarea>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-md space-y-3">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase">3) Đi trễ & Tác phong</label>
+                        <input type="text" data-key="latePermitted" class="form-input w-full p-2 text-sm border border-gray-300 rounded-md" placeholder="Trễ xin phép...">
+                        <input type="text" data-key="lateUnpermitted" class="form-input w-full p-2 text-sm border border-gray-300 rounded-md" placeholder="Trễ không phép...">
+                        <input type="text" data-key="lateTotal" class="form-input w-full p-2 text-sm border border-gray-300 rounded-md" placeholder="Tổng ngày đi trễ...">
+                    </div>
+                    <input type="text" data-key="noSign" class="form-input w-full p-2 border border-gray-300 rounded-md" placeholder="4) Không kí sổ...">
+                    <input type="text" data-key="lostMoney" class="form-input w-full p-2 border border-gray-300 rounded-md" placeholder="5) Làm mất tiền...">
+                    <input type="text" data-key="brokenItems" class="form-input w-full p-2 border border-gray-300 rounded-md" placeholder="6) Đổ bể đồ đạc...">
+                    <input type="text" data-key="forgotApp" class="form-input w-full p-2 border border-gray-300 rounded-md" placeholder="7) Quên bấm app...">
+                    <textarea data-key="incidents" rows="2" class="form-input w-full p-2 border border-gray-300 rounded-md resize-none" placeholder="8) Sự cố ca làm..."></textarea>
+                    <textarea data-key="managerWarning" rows="2" class="form-input w-full p-2 border border-gray-300 rounded-md resize-none" placeholder="9) Bị nhắc nhở..."></textarea>
+                    <textarea data-key="feedback" rows="2" class="form-input w-full p-2 border border-gray-300 rounded-md resize-none" placeholder="10) Góp ý..."></textarea>
+                    <input type="text" data-key="signature" class="form-input w-full p-2 border border-blue-200 bg-blue-50 rounded-md" placeholder="KÝ TÊN (Họ tên)">
+                </div>
+                <div class="h-10"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div id="preview-panel" class="w-full md:w-2/3 bg-gray-400 overflow-y-auto h-screen p-4 md:p-8 flex justify-center items-start">
+            <div class="w-full max-w-[620px] shadow-2xl bg-white mx-auto">
+                <div id="printable-document" class="bg-white w-full px-6 md:px-10 pt-8 pb-6 text-black text-[15px] relative border-none outline-none ring-0">
+                    
+                    <h1 class="text-[20px] md:text-[22px] font-bold text-center mb-6 uppercase tracking-wide">
+                        NHẬT KÍ HOẠT ĐỘNG TRONG THÁNG 
+                        <span class="inline-block">
+                            <span id="view-month" class="text-blue-800 border-b-[2.5px] border-dotted border-black min-w-[3rem] inline-block text-center ml-1 pb-0.5 relative -top-[4px]">......</span>
+                        </span>
+                    </h1>
+
+                    <div class="space-y-1">
+                        <!-- Trường 1 -->
+                        <div class="w-full dotted-bg min-h-[32px]">
+                            <span class="mask-label">1) Họ và tên (vd: Nguyễn Văn A - ca sáng full time):</span>
+                            <span id="view-fullName" class="user-value"></span>
+                        </div>
+                        
+                        <!-- Trường 2 - Tách dòng để xóa dấu chấm sau chữ 'ghi' -->
+                        <div class="w-full text-[15px]">
+                            <div class="bg-white w-full leading-[32px] pr-1 pt-1 relative z-20">
+                                2) Tăng ca trong tháng ( Vd: 13/9 - 5h, 15/9 - 4h,...Nếu không tăng thì ghi
+                            </div>
+                            <div class="w-full text-left dotted-bg min-h-[32px]">
+                                <span class="mask-label">không có):</span>
+                                <span id="view-overtime" class="user-value"></span>
+                            </div>
+                        </div>
+
+                        <div class="py-1">
+                            <span class="text-[15px] pr-2 font-bold bg-white relative z-10">3) Đi trễ, các lỗi tác phong: 10k/lần</span>
+                        </div>
+                        
+                        <!-- Trường 3.1 -->
+                        <div class="w-full dotted-bg min-h-[32px]">
+                            <span class="mask-label pl-6">- Đi trễ xin phép (Vd: 2 lần - 15/6 - 5 phút, 17/8 -10 phút):</span>
+                            <span id="view-latePermitted" class="user-value"></span>
+                        </div>
+                        <!-- Trường 3.2 -->
+                        <div class="w-full dotted-bg min-h-[32px]">
+                            <span class="mask-label pl-6">- Đi trễ không xin phép (tương tự trên):</span>
+                            <span id="view-lateUnpermitted" class="user-value"></span>
+                        </div>
+                        <!-- Trường 3.3 -->
+                        <div class="w-full dotted-bg min-h-[32px]">
+                            <span class="mask-label pl-6">- Tổng ngày đi trễ (vd: 3 ngày - 30k):</span>
+                            <span id="view-lateTotal" class="user-value"></span>
+                        </div>
+
+                        <!-- Trường 4 -->
+                        <div class="w-full dotted-bg min-h-[32px]">
+                            <span class="mask-label">4) Không kí ghi sổ khi hết ca 20k/lần:</span>
+                            <span id="view-noSign" class="user-value"></span>
+                        </div>
+
+                        <!-- Trường 5 -->
+                        <div class="w-full dotted-bg min-h-[64px]">
+                            <span class="mask-label">5) Làm mất tiền (chia trên số lượng, vd: 12/9 - 90k - 3 người(A, B, C)):</span>
+                            <span id="view-lostMoney" class="user-value"></span>
+                        </div>
+
+                        <!-- Trường 6 -->
+                        <div class="w-full dotted-bg min-h-[64px]">
+                            <span class="mask-label">6) Đổ bể đồ đạc, sự cố cá nhân (Lấy giá bán giảm 30%):</span>
+                            <span id="view-brokenItems" class="user-value"></span>
+                        </div>
+
+                        <!-- Trường 7 -->
+                        <div class="w-full dotted-bg min-h-[32px]">
+                            <span class="mask-label">7) Quên bấm app tanca (20k/lần):</span>
+                            <span id="view-forgotApp" class="user-value"></span>
+                        </div>
+
+                        <!-- Trường 8 -->
+                        <div class="w-full dotted-bg min-h-[64px]">
+                            <span class="mask-label">8) Sự cố trong ca làm, làm thiếu món của khách:</span>
+                            <span id="view-incidents" class="user-value"></span>
+                        </div>
+
+                        <!-- Trường 9 -->
+                        <div class="w-full dotted-bg min-h-[64px]">
+                            <span class="mask-label">9) Bị quản lí nhắc nhở - kí biên bản (có thì ghi không có thì thôi):</span>
+                            <span id="view-managerWarning" class="user-value"></span>
+                        </div>
+
+                        <!-- Trường 10 -->
+                        <div class="w-full text-[15px]">
+                            <div class="bg-white w-full leading-[32px] pr-1 pt-1 relative z-20">
+                                10) Tháng này em có điều gì cần góp ý với cửa hàng không ? (Có thì ghi
+                            </div>
+                            <div class="w-full text-left dotted-bg min-h-[32px]">
+                                <span class="mask-label">không có thì thôi):</span>
+                                <span id="view-feedback" class="user-value"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-2 leading-[1.6]">
+                        <p class="mb-3 text-justify">
+                            Các em sẽ có 3 ngày để tự kiểm tra rà soát hoạt động trong tháng trước khi gửi cửa hàng. Các em vui lòng tự check kĩ, nếu có sai sót hoặc gian dối làm mất thời gian cửa hàng rà soát sẽ phạt mỗi em 100k và kí biên bản.
+                        </p>
+                        <p class="mb-10 text-justify">
+                            Em cam kết các số liệu gửi cho cửa hàng về số giờ tăng ca, cũng như các sự cố đã được em kiểm tra đầy đủ về giấy tờ, app trên tinh thần minh bạch và rõ ràng để tránh sai sót và mất thời gian cho em và cửa hàng.
+                        </p>
+                        
+                        <div class="flex justify-end pr-8">
+                            <div class="text-center min-w-[200px]">
+                                <p class="font-bold mb-0 text-[16px] leading-snug">Kí tên</p>
+                                <p class="italic mb-1 text-[15px] leading-snug">(Ghi rõ họ tên)</p>
+                                <div class="mt-1">
+                                    <span id="view-signature" class="text-blue-800 border-b-[2.5px] border-dotted border-black min-w-[10rem] inline-block text-center pb-0.5 relative -top-[4px] font-bold italic"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.form-input');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const printableDoc = document.getElementById('printable-document');
+
+        inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                const key = e.target.getAttribute('data-key');
+                const viewElement = document.getElementById(`view-${key}`);
+                if (viewElement) viewElement.textContent = e.target.value || (key === 'month' ? '......' : '');
+            });
+        });
+
+        downloadBtn.addEventListener('click', async () => {
+            if (typeof html2canvas === 'undefined') return alert("Đang tải thư viện...");
+            try {
+                // Che viền rác xám cho Ubuntu
+                printableDoc.style.boxShadow = "inset 0 0 0 8px #ffffff";
+
+                const canvas = await html2canvas(printableDoc, { 
+                    scale: 4, 
+                    useCORS: true, 
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    onclone: (clonedDoc) => {
+                        clonedDoc.getElementById('printable-document').style.boxShadow = "inset 0 0 0 8px #ffffff";
+                    }
+                });
+                printableDoc.style.boxShadow = "none";
+                
+                const monthValue = document.querySelector('[data-key="month"]').value || 'X';
+                const link = document.createElement('a');
+                link.download = `NhatKyHoatDong_Thang_${monthValue}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+            } catch (error) { 
+                console.error(error); 
+                printableDoc.style.boxShadow = "none";
+            }
+        });
+    </script>
+</body>
+</html>
